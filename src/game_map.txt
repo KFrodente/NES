@@ -1,9 +1,9 @@
 Modules list:
 -------------
 game.o:
-    CODE              Offs=000000  Size=000186  Align=00001  Fill=0000
-    RODATA            Offs=000000  Size=00042B  Align=00001  Fill=0000
-    ZEROPAGE          Offs=000000  Size=00003E  Align=00001  Fill=0000
+    CODE              Offs=000000  Size=0001E2  Align=00001  Fill=0000
+    RODATA            Offs=000000  Size=00043B  Align=00001  Fill=0000
+    ZEROPAGE          Offs=000000  Size=000032  Align=00001  Fill=0000
     HEADER            Offs=000000  Size=000008  Align=00001  Fill=0000
     VECTORS           Offs=000000  Size=000006  Align=00001  Fill=0000
     OAM               Offs=000000  Size=000100  Align=00001  Fill=0000
@@ -17,11 +17,11 @@ Name                   Start     End    Size  Align
 ----------------------------------------------------
 CHARS                 000000  001FFF  002000  00001
 HEADER                000000  000007  000008  00001
-ZEROPAGE              000000  00003D  00003E  00001
+ZEROPAGE              000000  000031  000032  00001
 OAM                   000200  0002FF  000100  00001
 STARTUP               008000  008037  000038  00001
-CODE                  008038  0081BD  000186  00001
-RODATA                0081BE  0085E8  00042B  00001
+CODE                  008038  008219  0001E2  00001
+RODATA                00821A  008654  00043B  00001
 VECTORS               00FFFA  00FFFF  000006  00001
 
 
@@ -38,5 +38,5 @@ __STACKSIZE__             000300 REA
 Imports list:
 -------------
 __STACKSIZE__ ([linker generated]):
-    [linker generated]        C:\Users\kfrodente\Desktop\Folders\Emulators\NESClass\Projects\cc65\cfg/nes.cfg:29
+    [linker generated]        C:\Emulators\NESClass\Projects\cc65\cfg/nes.cfg:29
 

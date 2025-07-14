@@ -38,5 +38,5 @@ __STACKSIZE__             000300 REA
 Imports list:
 -------------
 __STACKSIZE__ ([linker generated]):
-    [linker generated]        C:\Users\kfrodente\Desktop\Folders\Emulators\NESClass\Projects\cc65\cfg/nes.cfg:29
+    [linker generated]        C:\Emulators\NESClass\Projects\cc65\cfg/nes.cfg:29
 

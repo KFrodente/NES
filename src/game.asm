@@ -7,6 +7,11 @@ SPRITE_2_ADDR = oam + 8
 SPRITE_3_ADDR = oam + 12
 SPRITE_BALL_ADDR = oam + 16
 
+PLAYER_WIDTH = 16     ; your player is 2x2 tiles = 16x16
+PLAYER_HEIGHT = 16
+BALL_WIDTH = 8
+BALL_HEIGHT = 8
+
 ;*****************************************************************
 ; Define NES cartridge Header
 ;*****************************************************************
@@ -70,8 +75,7 @@ time:                   .res 1    ; Time (60hz = 60 FPS)
 seconds:                .res 1    ; Seconds
 ; Reserve remaining space in this section if needed
                         .res 05   ; Pad to $30 (optional)
-;ball stuff
-                      .res 12
+
 ;*****************************************************************
 ; OAM (Object Attribute Memory) ($0200–$02FF)
 ;*****************************************************************
@@ -97,6 +101,27 @@ oam: .res 256	; sprite OAM data
 
 ; Non-Maskable Interrupt Handler - called during VBlank
 .proc nmi_handler
+    ;SAVE REGISTERS
+    PHA
+    TXA
+    PHA
+    TYA
+    PHA
+
+    INC time      ;inc time by one
+    LDA time      ; locad time into accumulator
+    CMP #60       ; check if time is 60
+    BNE skip      ; if not 50 skip
+      INC seconds ; increment seconds by 1
+      LDA #0      ; reset time to 0
+      STA time
+    skip:
+    ;restore registers
+    PLA
+    TAY
+    PLA
+    TAX
+    PLA
 
   RTI                     ; Return from interrupt (not using NMI yet)
 .endproc
@@ -203,6 +228,16 @@ LDX #0
 .endproc
 
 .proc init_sprites
+
+  ; LDX #0
+  ; load_sprite:
+  ;   LDA sprite_data, X
+  ;   STA SPRITE_0_ADDR, X
+  ;   INX
+  ;   CPX #4
+  ;   BNE load_sprite
+
+
   ; set sprite tiles
   LDA #1
   STA SPRITE_0_ADDR + SPRITE_OFFSET_TILE
@@ -288,6 +323,59 @@ LDX #0
 
   RTS
 
+.endproc
+
+.proc check_ball_player_collision
+    ; --- Check X Axis Overlap ---
+    ; ball_x + BALL_WIDTH > player_x ?
+    LDA ball_x
+    CLC
+    ADC #BALL_WIDTH
+    CMP player_x
+    BCC no_collision ; No overlap if ball is completely left
+
+    ; ball_x < player_x + PLAYER_WIDTH ?
+    LDA player_x
+    CLC
+    ADC #PLAYER_WIDTH
+    CMP ball_x
+    BCC no_collision ; No overlap if ball is completely right
+
+    ; --- Check Y Axis Overlap ---
+    ; ball_y + BALL_HEIGHT > player_y ?
+    LDA ball_y
+    CLC
+    ADC #BALL_HEIGHT
+    CMP player_y
+    BCC no_collision ; No overlap if ball is above
+
+    ; ball_y < player_y + PLAYER_HEIGHT ?
+    LDA player_y
+    CLC
+    ADC #PLAYER_HEIGHT
+    CMP ball_y
+    BCC no_collision ; No overlap if ball is below
+
+    ; === Collision Detected ===
+    ; Bounce the ball upward
+    LDA #$FF
+    STA ball_dy
+
+    JSR get_random    ; Generate new random number
+    LDA $2002         ; Reset PPU address latch
+    LDA #$3F
+    STA $2006         ; High byte for palette
+    LDA #$10
+    STA $2006         ; Low byte for $3F10 (sprite color)
+
+    LDA random_num
+    AND #$3F          ; Limit to 0–63
+    STA $2007         ; Write random color
+
+    RTS
+
+no_collision:
+    RTS
 .endproc
 
 .proc update_player
@@ -398,6 +486,7 @@ forever:
     JSR read_controller
     JSR update_player
     JSR update_ball
+    JSR check_ball_player_collision
 
     ; Update sprite data (DMA transfer to PPU OAM)
     JSR update_sprites
@@ -500,6 +589,12 @@ palette_data:
 ; Load nametable data
 nametable_data:
   .incbin "assets/screen.nam"
+
+sprite_data:
+.byte 30, 1, 0, 40
+.byte 30, 2, 0, 48
+.byte 38, 3, 0, 40
+.byte 38, 4, 0, 48
 
 hello_txt:
 .byte 'W','O','A','H', ' ', 'T', 'H', 'E', 'R', 'E', 0
