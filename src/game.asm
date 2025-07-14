@@ -7,10 +7,9 @@ SPRITE_2_ADDR = oam + 8
 SPRITE_3_ADDR = oam + 12
 SPRITE_BALL_ADDR = oam + 16
 
-PLAYER_WIDTH = 16     ; your player is 2x2 tiles = 16x16
-PLAYER_HEIGHT = 16
-BALL_WIDTH = 8
-BALL_HEIGHT = 8
+;global variables
+PLAYER_SIZE = 16     ; player is 2x2 tiles = 16x16 change to width and height if size isnt a box
+BALL_SIZE = 8        ; ball is 1 tile
 
 ;*****************************************************************
 ; Define NES cartridge Header
@@ -325,39 +324,99 @@ LDX #0
 
 .endproc
 
+; .proc check_ball_player_collision
+;     ; --- Check X Axis Overlap ---
+;     ; ball_x + BALL_WIDTH > player_x ?
+;     LDA ball_x
+;     CLC
+;     ADC #BALL_SIZE
+;     CMP player_x
+;     BCC NOT_HITRIGHT ; No overlap if ball is completely left
+;       ; Bounce the ball upward
+;       LDA #FF
+;       STA ball_dx
+;     ; ball_x < player_x + PLAYER_WIDTH ?
+; NOT_HITRIGHT:
+;     LDA player_x
+;     CLC
+;     ADC #PLAYER_SIZE
+;     CMP ball_x
+;     BCC NOT_HITLEFT ; No overlap if ball is completely right
+;       ; Bounce the ball upward
+;       LDA #1
+;       STA ball_dx
+;     ; --- Check Y Axis Overlap ---
+;     ; ball_y + BALL_HEIGHT > player_y ?
+; NOT_HITLEFT:
+;     LDA ball_y
+;     CLC
+;     ADC #BALL_SIZE
+;     CMP player_y
+;     BCC NOT_HITBOTTOM ; No overlap if ball is above
+;       ; Bounce the ball upward
+;       LDA #1
+;       STA ball_dy
+;     ; ball_y < player_y + PLAYER_HEIGHT ?
+; NOT_HITBOTTOM:
+;     LDA player_y
+;     CLC
+;     ADC #PLAYER_SIZE
+;     CMP ball_y
+;     BCC NOT_HITTOP ; No overlap if ball is below
+;       ; Bounce the ball upward
+;       LDA #$FF
+;       STA ball_dy
+;     ; === Collision Detected ===
+
+;     JSR get_random    ; Generate new random number
+;     LDA $2002         ; Reset PPU address latch
+;     LDA #$3F
+;     STA $2006         ; High byte for palette
+;     LDA #$10
+;     STA $2006         ; Low byte for $3F10 (sprite color)
+
+;     LDA random_num
+;     AND #$3F          ; Limit to 0–63
+;     STA $2007         ; Write random color
+
+;     RTS
+
+; NOT_HITTOP:
+;     RTS
+; .endproc
+
 .proc check_ball_player_collision
     ; --- Check X Axis Overlap ---
     ; ball_x + BALL_WIDTH > player_x ?
     LDA ball_x
     CLC
-    ADC #BALL_WIDTH
+    ADC #BALL_SIZE
     CMP player_x
     BCC no_collision ; No overlap if ball is completely left
-
     ; ball_x < player_x + PLAYER_WIDTH ?
+NOT_HITRIGHT:
     LDA player_x
     CLC
-    ADC #PLAYER_WIDTH
+    ADC #PLAYER_SIZE
     CMP ball_x
     BCC no_collision ; No overlap if ball is completely right
-
     ; --- Check Y Axis Overlap ---
     ; ball_y + BALL_HEIGHT > player_y ?
+NOT_HITLEFT:
     LDA ball_y
     CLC
-    ADC #BALL_HEIGHT
+    ADC #BALL_SIZE
     CMP player_y
-    BCC no_collision ; No overlap if ball is above
-
+    BCC no_collision; No overlap if ball is above
     ; ball_y < player_y + PLAYER_HEIGHT ?
+NOT_HITBOTTOM:
     LDA player_y
     CLC
-    ADC #PLAYER_HEIGHT
+    ADC #PLAYER_SIZE
     CMP ball_y
     BCC no_collision ; No overlap if ball is below
-
+      ; Bounce the ball upward
     ; === Collision Detected ===
-    ; Bounce the ball upward
     LDA #$FF
     STA ball_dy
 
@@ -371,10 +430,10 @@ LDX #0
     LDA random_num
     AND #$3F          ; Limit to 0–63
     STA $2007         ; Write random color
-
+no_collision:
     RTS
 
-no_collision:
+NOT_HITTOP:
     RTS
 .endproc
 
